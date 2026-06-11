@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,
+      initial-scale=1,
+      maximum-scale=1,
+      user-scalable=no">
+<title>Sistem 36 Golf</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,sans-serif;background:#f3f4f6;color:#1a1a1a;min-height:100vh;padding:16px}
+.app{
+  width:100%;
+  max-width:1200px;
+  margin:0 auto;
+}
+.header{display:flex;align-items:center;gap:12px;margin-bottom:20px;background:#fff;padding:16px 20px;border-radius:12px;border:1px solid #e5e7eb}
+.logo{width:48px;height:48px;border-radius:50%;background:#0F6E56;display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;flex-shrink:0}
+.header h1{font-size:22px;font-weight:600;color:#111}
+.header p{font-size:13px;color:#6b7280;margin-top:2px}
+.tabs{display:flex;gap:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:4px;margin-bottom:16px}
+.tab{flex:1;padding:9px 12px;font-size:13px;cursor:pointer;border:none;background:transparent;color:#6b7280;border-radius:8px;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.active{background:#0F6E56;color:#fff;font-weight:500}
+.tab:hover:not(.active){background:#f3f4f6;color:#374151}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;margin-bottom:12px}
+.section-title{font-size:12px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+.field-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:90px}
+.field label{font-size:12px;color:#6b7280;font-weight:500}
+.field input,.field select{font-size:14px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111;width:100%;outline:none}
+.field input:focus,.field select:focus{border-color:#0F6E56;box-shadow:0 0 0 3px #0F6E5620}
+.btn{padding:9px 18px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-weight:500}
+.btn:hover{background:#f9fafb}
+.btn.primary{background:#0F6E56;color:#fff;border-color:#0F6E56}
+.btn.primary:hover{background:#085041}
+.btn.danger{color:#dc2626;border-color:#fca5a5}
+.btn.danger:hover{background:#fef2f2}
+.btn.sm{padding:6px 12px;font-size:13px}
+.player-chip{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;margin-bottom:8px}
+.avatar{width:36px;height:36px;border-radius:50%;background:#0F6E56;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:600;flex-shrink:0}
+.player-info{flex:1}
+.player-name{font-size:14px;font-weight:600;color:#111}
+.player-meta{font-size:12px;color:#6b7280}
+.score-grid{display:grid;grid-template-columns:140px repeat(9,1fr);gap:4px;align-items:center;margin-bottom:4px}
+.score-label{font-size:12px;color:#9ca3af;font-weight:600;text-align:center;padding:4px 0}
+.score-label.left{text-align:left}
+.score-input{width:100%;text-align:center;font-size:13px;padding:6px 2px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#111;outline:none}
+.score-input:focus{border-color:#0F6E56}
+.par-row{display:grid;grid-template-columns:140px repeat(9,1fr);gap:4px;margin-bottom:6px}
+.par-cell{font-size:12px;font-weight:500;color:#6b7280;text-align:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:5px 2px}
+.par-cell.left{text-align:left;padding-left:8px}
+.par-cell input{border:none;background:transparent;text-align:center;font-size:12px;width:100%;outline:none;color:#374151;font-weight:600}
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+.metric{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px}
+.metric-label{font-size:12px;color:#9ca3af;font-weight:500;margin-bottom:4px}
+.metric-value{font-size:24px;font-weight:700;color:#111}
+.metric-sub{font-size:11px;color:#9ca3af;margin-top:2px}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:20px;margin:24px 0;padding:20px 0}
+.podium-place{display:flex;flex-direction:column;align-items:center;gap:10px}
+.podium-block{display:flex;align-items:center;justify-content:center;border-radius:10px 10px 0 0;font-size:28px;width:110px;border:2px solid transparent}
+.podium-1 .podium-block{height:120px;background:linear-gradient(135deg,#0F6E56,#1D9E75);box-shadow:0 8px 24px #0F6E5640}
+.podium-2 .podium-block{height:85px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);box-shadow:0 6px 18px #3b82f640}
+.podium-3 .podium-block{height:65px;background:linear-gradient(135deg,#b45309,#d97706);box-shadow:0 4px 14px #d9770640}
+.podium-name{font-size:14px;font-weight:600;color:#111;text-align:center;max-width:110px;word-wrap:break-word}
+.podium-score{font-size:13px;color:#6b7280;font-weight:500}
+.podium-rank{font-size:22px}
+.result-table{width:100%;border-collapse:collapse;font-size:14px}
+.result-table th{text-align:left;padding:10px 12px;color:#6b7280;font-weight:600;border-bottom:2px solid #f3f4f6;font-size:12px;background:#f9fafb}
+.result-table td{padding:10px 12px;border-bottom:1px solid #f3f4f6;color:#111}
+.result-table tr:hover td{background:#f9fafb}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:3px 10px;border-radius:100px;font-weight:600}
+.badge.gold{background:#fef3c7;color:#92400e}
+.badge.silver{background:#dbeafe;color:#1e40af}
+.badge.bronze{background:#ffedd5;color:#9a3412}
+.badge.other{background:#f3f4f6;color:#6b7280}
+.alert{padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.alert.info{background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0}
+.empty{text-align:center;padding:2.5rem;color:#9ca3af;font-size:14px}
+.stbl-pts{display:inline-block;padding:3px 8px;border-radius:100px;font-size:13px;font-weight:700;min-width:28px;text-align:center}
+.pts-0{background:#fee2e2;color:#dc2626}
+.pts-1{background:#fef3c7;color:#d97706}
+.pts-2{background:#d1fae5;color:#059669}
+.pts-3{background:#ecfdf5;color:#065f46}
+.pts-4{background:#6ee7b7;color:#064e3b}
+.hole-score{display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;width:32px;height:28px;border-radius:5px}
+.eagle{background:#86efac;color:#14532d}
+.birdie{background:#bbf7d0;color:#166534}
+.par-sc{background:#e0f2fe;color:#075985}
+.bogey{background:#fed7aa;color:#9a3412}
+.double{background:#fecaca;color:#991b1b}
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:10px}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#6b7280}
+.legend-dot{width:14px;height:14px;border-radius:3px;display:inline-block}
+@media(max-width:600px){
+  .score-grid,.par-row{grid-template-columns:80px repeat(9,1fr)}
+  .podium-block{width:80px}
+  .podium-name{max-width:80px}
+  .field-row{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .btn{
+    width:100%;
+    justify-content:center;
+  }
+
+}
+
+@media (min-width: 768px){
+
+  .app{
+    max-width:1200px;
+  }
+
+  body{
+    padding:20px;
+  }
+
+  .card{
+    padding:20px 24px;
+  }
+
+  .score-input{
+    height:42px;
+    font-size:16px;
+  }
+
+  .tab{
+    padding:14px;
+    font-size:15px;
+  }
+}
+
+/* Hilangkan spinner Chrome, Edge, Safari */
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hilangkan spinner Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <div class="logo">⛳</div>
+    <div>
+      <h1>SISTEM 36 GOLF</h1>
+      <p>Gross Score · Net Score</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('setup')"><i class="ti ti-users"></i> Pemain</button>
+    <button class="tab" onclick="showTab('pars')"><i class="ti ti-flag"></i> Par & Stroke</button>
+    <button class="tab" onclick="showTab('scores')"><i class="ti ti-clipboard-list"></i> Skor</button>
+    <button class="tab" onclick="showTab('results')"><i class="ti ti-trophy"></i> Hasil</button>
+  </div>
+
+  <!-- PANEL PEMAIN -->
+  <div id="panel-setup" class="panel active">
+    <div class="card">
+      <div class="section-title">Pengaturan Turnamen</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nama Turnamen</label>
+          <input type="text" id="tournament-name" placeholder="Nama Pertandingan" value="">
+        </div>
+        <div class="field" style="max-width:160px">
+          <label>Format Perhitungan</label>
+          <select id="game-format">
+            <option value="nett">Nett Score</option>
+            <option value="gross">Gross Score</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title">Tambah Pemain</div>
+      <div class="field-row">
+        <div class="field">
+          <label>Nama Pemain</label>
+          <input type="text" id="new-player-name" placeholder="Nama lengkap" onkeydown="if(event.key==='Enter')addPlayer()">
+        </div>
+        <button class="btn primary" onclick="addPlayer()" style="flex-shrink:0"><i class="ti ti-plus"></i> Tambah</button>
+      </div>
+    </div>
+    <div id="players-list"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px">
+        <button class="btn danger" onclick="resetStorage()">
+          <i class="ti ti-trash"></i> Reset Semua
+        </button>
+
+        <button class="btn primary" onclick="showTab('pars')">
+          Lanjut ke Par & Stroke Index
+          <i class="ti ti-arrow-right"></i>
+        </button>
+      </div>
+  </div>
+
+  <!-- PANEL PAR -->
+  <div id="panel-pars" class="panel">
+    <div class="alert info"><i class="ti ti-info-circle"></i> <span>Atur Par dan Stroke Index (SI) setiap hole. SI menentukan urutan alokasi pukulan bonus handicap.</span></div>
+    <div class="card">
+      <div class="section-title">Front Nine — Hole 1 sampai 9</div>
+      <div id="par-front-grid"></div>
+    </div>
+    <div class="card">
+      <div class="section-title">Back Nine — Hole 10 sampai 18</div>
+      <div id="par-back-grid"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <button class="btn" onclick="showTab('setup')"><i class="ti ti-arrow-left"></i> Kembali</button>
+      <button class="btn primary" onclick="showTab('scores')">Lanjut ke Input Skor <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- PANEL SKOR -->
+  <div id="panel-scores" class="panel">
+    <div id="score-sheets"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px">
+      <button class="btn" onclick="showTab('pars')"><i class="ti ti-arrow-left"></i> Kembali</button>
+      <button class="btn primary" onclick="calculateAndShow()"><i class="ti ti-chart-bar"></i> Hitung & Lihat Hasil</button>
+    </div>
+  </div>
+
+  <!-- PANEL HASIL -->
+  <div id="panel-results" class="panel">
+    <div id="results-content"><div class="empty"><i class="ti ti-trophy" style="font-size:40px;display:block;margin-bottom:10px"></i>Belum ada hasil. Isi skor terlebih dahulu.</div></div>
+  </div>
+</div>
+
+<script>
+let players = JSON.parse(localStorage.getItem('golf_players')) || [];
+let pars = JSON.parse(localStorage.getItem('golf_pars')) || [4,3,5,4,4,3,5,4,4,4,3,5,4,4,3,5,4,4];
+let strokeIndex = JSON.parse(localStorage.getItem('golf_si')) || [1,3,5,7,9,11,13,15,17,2,4,6,8,10,12,14,16,18];
+let scores = JSON.parse(localStorage.getItem('golf_scores')) || {};
+
+function saveData(){
+  localStorage.setItem('golf_players', JSON.stringify(players));
+  localStorage.setItem('golf_pars', JSON.stringify(pars));
+  localStorage.setItem('golf_si', JSON.stringify(strokeIndex));
+  localStorage.setItem('golf_scores', JSON.stringify(scores));
+}
+
+function resetStorage(){
+  if(confirm('Hapus semua data?')){
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+function initParGrids(){
+  ['front','back'].forEach((side,si)=>{
+    const offset=si*9;
+    const el=document.getElementById('par-'+side+'-grid');
+    let html='<div class="par-row"><div class="par-cell left">Hole</div>';
+    for(let i=1;i<=9;i++) html+=`<div class="par-cell">${i+offset}</div>`;
+    html+='</div><div class="par-row"><div class="par-cell left">Par</div>';
+    for(let i=0;i<9;i++) html+=`<div class="par-cell"><input type="number" min="3" max="5" value="${pars[offset+i]}" onchange="pars[${offset+i}]=+this.value;saveData()"></div>`;
+    html+='</div>';
+    el.innerHTML=html;
+  });
+}
+
+function renderPlayersList(){
+  const el=document.getElementById('players-list');
+  if(!players.length){el.innerHTML='<div class="empty"><i class="ti ti-users" style="font-size:36px;display:block;margin-bottom:10px"></i>Belum ada pemain. Tambahkan pemain di atas.</div>';return;}
+  el.innerHTML=players.map((p,i)=>`
+    <div class="player-chip">
+      <div class="avatar">${p.name.substring(0,2).toUpperCase()}</div>
+      <div class="player-info">
+        <div class="player-name">${p.name}</div>
+      </div>
+      <button class="btn sm danger" onclick="removePlayer(${i})"><i class="ti ti-trash"></i></button>
+    </div>`).join('');
+}
+
+function addPlayer(){
+  const name=document.getElementById('new-player-name').value.trim();
+  if(!name){alert('Nama pemain harus diisi!');document.getElementById('new-player-name').focus();return;}
+  const id=Date.now()+Math.random();
+  players.push({id,name});
+  scores[id]=Array(18).fill('');
+  document.getElementById('new-player-name').value='';
+  renderPlayersList();
+  renderScoreSheets();
+  saveData();
+}
+
+function removePlayer(idx){
+  if(!confirm('Hapus pemain '+players[idx].name+'?')) return;
+  delete scores[players[idx].id];
+  players.splice(idx,1);
+  renderPlayersList();
+  renderScoreSheets();
+  saveData();
+}
+
+function renderScoreSheets(){
+  const el=document.getElementById('score-sheets');
+  if(!players.length){el.innerHTML='<div class="empty">Tambah pemain terlebih dahulu di tab Pemain.</div>';return;}
+  el.innerHTML=players.map(p=>`
+    <div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <div class="avatar">${p.name.substring(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-size:16px;font-weight:600;color:#111">${p.name}</div>
+        </div>
+      </div>
+      <div class="section-title">Front Nine — Hole 1 s/d 9</div>
+      <div style="overflow-x:auto"><div style="min-width:500px">
+      <div class="score-grid" style="margin-bottom:2px">
+        <div class="score-label left" style="font-size:11px;color:#9ca3af">Hole</div>
+        ${[1,2,3,4,5,6,7,8,9].map(h=>`<div class="score-label">${h}</div>`).join('')}
+      </div>
+      <div class="score-grid" style="margin-bottom:4px">
+        <div class="score-label left" style="font-size:11px;color:#9ca3af">Par</div>
+        ${pars.slice(0,9).map(p=>`<div class="score-label" style="color:#6b7280">${p}</div>`).join('')}
+      </div>
+      <div class="score-grid" style="margin-bottom:12px">
+        <div class="score-label left" style="font-size:13px;font-weight:600;color:#111">Skor</div>
+        ${[0,1,2,3,4,5,6,7,8].map(i=>`<div><input class="score-input" type="number" min="1" max="15" placeholder="-" value="${scores[p.id]&&scores[p.id][i]!==''?scores[p.id][i]:''}" onchange="setScore(${p.id},${i},this.value)"></div>`).join('')}
+      </div>
+      </div></div>
+      <div class="section-title">Back Nine — Hole 10 s/d 18</div>
+      <div style="overflow-x:auto"><div style="min-width:500px">
+      <div class="score-grid" style="margin-bottom:2px">
+        <div class="score-label left" style="font-size:11px;color:#9ca3af">Hole</div>
+        ${[10,11,12,13,14,15,16,17,18].map(h=>`<div class="score-label">${h}</div>`).join('')}
+      </div>
+      <div class="score-grid" style="margin-bottom:4px">
+        <div class="score-label left" style="font-size:11px;color:#9ca3af">Par</div>
+        ${pars.slice(9,18).map(p=>`<div class="score-label" style="color:#6b7280">${p}</div>`).join('')}
+      </div>
+      <div class="score-grid">
+        <div class="score-label left" style="font-size:13px;font-weight:600;color:#111">Skor</div>
+        ${[9,10,11,12,13,14,15,16,17].map(i=>`<div><input class="score-input" type="number" min="1" max="15" placeholder="-" value="${scores[p.id]&&scores[p.id][i]!==''?scores[p.id][i]:''}" onchange="setScore(${p.id},${i},this.value)"></div>`).join('')}
+      </div>
+      </div></div>
+    </div>`).join('');
+}
+
+function setScore(pid,hole,val){
+  if(!scores[pid]) scores[pid]=Array(18).fill('');
+  scores[pid][hole]=val===''?'':parseInt(val);
+  saveData();
+}
+
+function getSystem36Adjustment(gross, par){
+  const diff = gross - par;
+
+  if(diff <= -2) return -2;      // Eagle atau lebih baik
+  if(diff === -1) return -1;     // Birdie
+  if(diff <= 2) return 0;        // Par, Bogey, Double
+
+  return diff - 2;               // Triple=1, Quad=2, dst
+}
+
+function getCountbackScore(result,startHole){
+
+  let total = 0;
+
+  for(let i=startHole;i<18;i++){
+
+    const h = result.holeData[i];
+
+    if(h.gross===null) continue;
+
+    total += h.gross;
+  }
+
+  return total;
+
+}
+
+function calculateResults(){
+  const format=document.getElementById('game-format').value;
+
+  return players.map(p=>{
+    const sc=scores[p.id]||Array(18).fill('');
+
+    let totalGross=0;
+    let totalAdjustment=0;
+    let grossCount=0;
+
+    const holeData=sc.map((s,i)=>{
+
+      const gross=s===''?null:parseInt(s);
+
+      let adjustment=null;
+
+      if(gross!==null){
+
+        const diff = gross - pars[i];
+
+        if(diff <= -2){
+          adjustment = -2;          // Eagle atau lebih baik
+        }else if(diff === -1){
+          adjustment = -1;          // Birdie
+        }else if(diff <= 2){
+          adjustment = 0;           // Par, Bogey, Double
+        }else{
+          adjustment = diff - 2;    // Triple=1, Quad=2, dst
+        }
+
+        totalGross += gross;
+        totalAdjustment += adjustment;
+        grossCount++;
+      }
+
+      return {
+        gross,
+        par: pars[i],
+        adjustment
+      };
+    });
+
+    const totalPar = pars.reduce((a,b)=>a+b,0);
+
+    // NET SYSTEM 36
+    const totalNett = totalPar + totalAdjustment;
+    const back9 = getCountbackScore({holeData},9);
+    const last6 = getCountbackScore({holeData},12);
+    const last3 = getCountbackScore({holeData},15);
+    const hole18 = holeData[17]?.gross || 999;
+
+
+    return {
+      player:p,
+      holeData,
+      totalGross,
+      totalNett,
+      totalAdjustment,
+      grossCount,
+      format,
+      totalPar,
+      back9,
+      last6,
+      last3,
+      hole18
+    };
+
+   }).sort((a,b)=>{
+
+    if(format === 'gross'){
+
+      if(a.totalGross !== b.totalGross)
+        return a.totalGross - b.totalGross;
+
+      const aBack9 = getCountbackScore(a,9);
+      const bBack9 = getCountbackScore(b,9);
+
+      if(aBack9 !== bBack9)
+        return aBack9 - bBack9;
+
+      const aLast6 = getCountbackScore(a,12);
+      const bLast6 = getCountbackScore(b,12);
+
+      if(aLast6 !== bLast6)
+        return aLast6 - bLast6;
+
+      const aLast3 = getCountbackScore(a,15);
+      const bLast3 = getCountbackScore(b,15);
+
+      if(aLast3 !== bLast3)
+        return aLast3 - bLast3;
+
+      return a.holeData[17].gross - b.holeData[17].gross;
+    }
+
+    // NETT
+
+    if(a.totalNett !== b.totalNett)
+      return a.totalNett - b.totalNett;
+
+    const aBack9 = getCountbackScore(a,9);
+    const bBack9 = getCountbackScore(b,9);
+
+    if(aBack9 !== bBack9)
+      return aBack9 - bBack9;
+
+    const aLast6 = getCountbackScore(a,12);
+    const bLast6 = getCountbackScore(b,12);
+
+    if(aLast6 !== bLast6)
+      return aLast6 - bLast6;
+
+    const aLast3 = getCountbackScore(a,15);
+    const bLast3 = getCountbackScore(b,15);
+
+    if(aLast3 !== bLast3)
+      return aLast3 - bLast3;
+
+    return a.holeData[17].gross - b.holeData[17].gross;
+
+  });
+}
+
+function calculateAndShow(){
+  if(!players.length){alert('Tambah pemain dulu!');return;}
+  const results=calculateResults();
+  renderResults(results);
+  showTab('results');
+}
+
+function scoreClass(diff){
+  if(diff <= -2) return 'eagle';
+  if(diff === -1) return 'birdie';
+  if(diff === 0) return 'par-sc';
+  if(diff === 1) return 'bogey';
+  return 'double';
+}
+
+function getCountbackReason(winner, loser){
+
+  if(winner.back9 !== loser.back9)
+    return `Countback Back 9 (${winner.back9} vs ${loser.back9})`;
+
+  if(winner.last6 !== loser.last6)
+    return `Countback Last 6 (${winner.last6} vs ${loser.last6})`;
+
+  if(winner.last3 !== loser.last3)
+    return `Countback Last 3 (${winner.last3} vs ${loser.last3})`;
+
+  if(winner.hole18 !== loser.hole18)
+    return `Countback Hole 18 (${winner.hole18} vs ${loser.hole18})`;
+
+  return null;
+}
+
+function renderResults(results){
+  const format=document.getElementById('game-format').value;
+  const tname=document.getElementById('tournament-name').value||'Golf Tournament';
+  const fmtLabel=format==='stableford'?'Stableford (Poin)':format==='nett'?'Nett Score':'Gross Score';
+  const el=document.getElementById('results-content');
+  const top=results.slice(0,Math.min(3,results.length));
+  let countbackInfo = '';
+
+  if(results.length > 1){
+
+    const first = results[0];
+    const second = results[1];
+
+    if(first.totalNett === second.totalNett){
+
+      const reason = getCountbackReason(first, second);
+
+      if(reason){
+        countbackInfo = `
+          <div class="alert info" style="margin-top:12px">
+            🏆 ${first.player.name} mengalahkan ${second.player.name}
+            melalui ${reason}.
+          </div>
+        `;
+      }
+    }
+  }
+
+  let podiumHtml='';
+  if(top.length>0){
+    const arrangement=top.length===3?[{r:top[1],cls:'podium-2',medal:'🥈',ht:'85px'},{r:top[0],cls:'podium-1',medal:'🥇',ht:'120px'},{r:top[2],cls:'podium-3',medal:'🥉',ht:'65px'}]:
+      top.length===2?[{r:top[1],cls:'podium-2',medal:'🥈',ht:'85px'},{r:top[0],cls:'podium-1',medal:'🥇',ht:'120px'}]:
+      [{r:top[0],cls:'podium-1',medal:'🥇',ht:'120px'}];
+      function getScore(r){
+        return 'Net ' + r.totalNett;
+      }
+    podiumHtml=`<div class="podium">${arrangement.map(a=>`
+      <div class="podium-place ${a.cls}">
+        <div class="podium-rank">${a.medal}</div>
+        <div class="podium-block" style="height:${a.ht}">${a.medal}</div>
+        <div class="podium-name">${a.r.player.name}</div>
+        <div class="podium-score">${getScore(a.r)}</div>
+      </div>`).join('')}</div>`;
+  }
+
+  const tableRows=results.map((r,i)=>{
+    const ptsHtml =
+    `${r.totalAdjustment > 0 ? '+' : ''}${r.totalAdjustment}`;
+    const badges=['<span class="badge gold">🥇 Juara 1</span>','<span class="badge silver">🥈 Juara 2</span>','<span class="badge bronze">🥉 Juara 3</span>'];
+    const rankBadge=i<3?badges[i]:`<span class="badge other">${i+1}</span>`;
+    const nettVsPar=r.totalNett-r.totalPar;
+    const nettStr=r.grossCount>0?(nettVsPar===0?'E':nettVsPar>0?'+'+nettVsPar:nettVsPar):'–';
+    return `<tr>
+      <td>${rankBadge}</td>
+      <td><div style="display:flex;align-items:center;gap:8px">
+        <div class="avatar" style="width:30px;height:30px;font-size:11px">${r.player.name.substring(0,2).toUpperCase()}</div>
+        <div>
+          <div style="font-weight:600;font-size:14px">${r.player.name}</div>
+          <div style="font-size:12px;color:#6b7280">
+            Sistem 36 | ${
+              i===0?'🏆 Juara Pertama':
+              i===1?'🥈 Runner-up':
+              i===2?'🥉 Peringkat 3':
+              'Peringkat '+(i+1)
+            }
+          </div>
+        </div></div></td>
+      <td style="text-align:center;font-weight:600">${r.grossCount>0?r.totalGross:'–'}</td>
+      <td style="text-align:center;font-weight:600">${r.grossCount>0?r.totalNett:'–'}</td>
+      <td style="text-align:center">${r.grossCount>0?nettStr:'–'}</td>
+      <td style="text-align:center">${ptsHtml}</td>
+      <td style="text-align:center;color:#6b7280">${r.grossCount}/18</td>
+    </tr>`;
+  }).join('');
+
+  const detailCards=results.map((r,rank)=>{
+    const medals=['🥇','🥈','🥉'];
+    const frontHoles=r.holeData.slice(0,9);
+    const backHoles=r.holeData.slice(9,18);
+    function scoreRow(holes,offset){
+      return holes.map((h,i)=>{
+        if(h.gross===null) return `<div style="text-align:center;font-size:12px;color:#d1d5db">–</div>`;
+        const diff = h.gross - h.par;
+        return `<div style="display:flex;justify-content:center"><div class="hole-score ${scoreClass(diff)}">${h.gross}</div></div>`;
+      }).join('');
+    }
+    function holeHeader(start,end){
+      let h='';
+      for(let i=start;i<=end;i++) h+=`<div style="text-align:center;font-size:11px;font-weight:600;color:#9ca3af">${i}</div>`;
+      return h;
+    }
+    function parHeader(holes){
+      return holes.map(h=>`<div style="text-align:center;font-size:11px;color:#9ca3af">${h.par}</div>`).join('');
+    }
+    return `<div class="card">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+        <div class="avatar">${r.player.name.substring(0,2).toUpperCase()}</div>
+        <div style="flex:1">
+          <div style="font-size:16px;font-weight:600">${rank<3?medals[rank]+' ':''} ${r.player.name}</div>
+            <div style="font-size:12px;color:#6b7280">
+            Sistem 36 |
+            ${
+              rank===0?'🏆 Juara Pertama':
+              rank===1?'🥈 Runner-up':
+              rank===2?'🥉 Peringkat 3':
+              'Peringkat '+(rank+1)
+            }
+          </div>
+        </div>
+      </div>
+      <div class="summary-grid">
+        <div class="metric"><div class="metric-label">Total Gross</div><div class="metric-value">${r.grossCount>0?r.totalGross:'–'}</div><div class="metric-sub">Par ${r.totalPar}</div></div>
+        <div class="metric"><div class="metric-label">Total Nett</div><div class="metric-value">${r.grossCount>0?r.totalNett:'–'}</div><div class="metric-sub">System 36 Adjustment</div></div>
+        <div class="metric">
+          <div class="metric-label">Adjustment</div>
+          <div class="metric-value" style="color:#0F6E56">
+            ${r.totalAdjustment > 0 ? '+' : ''}${r.totalAdjustment}
+          </div>
+          <div class="metric-sub">System 36</div>
+        </div>
+        <div class="metric"><div class="metric-label">Hole Selesai</div><div class="metric-value">${r.grossCount}</div><div class="metric-sub">dari 18 hole</div></div>
+      </div>
+      <div class="section-title">Scorecard</div>
+      <div style="overflow-x:auto"><div style="min-width:520px">
+        <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Hole</div>${holeHeader(1,9)}</div>
+        <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Par</div>${parHeader(frontHoles)}</div>
+        <div style="display:grid;grid-template-columns:140px repeat(9,1fr);gap:4px;margin-bottom:12px">
+          <div style="font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;padding-left:8px">Gross</div>
+          ${scoreRow(frontHoles,0)}
+        </div>
+        <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Hole</div>${holeHeader(10,18)}</div>
+        <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Par</div>${parHeader(backHoles)}</div>
+        <div style="display:grid;grid-template-columns:140px repeat(9,1fr);gap:4px">
+          <div style="font-size:12px;font-weight:600;color:#374151;display:flex;align-items:center;padding-left:8px">Gross</div>
+          ${scoreRow(backHoles,9)}
+        </div>
+      </div></div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:#86efac"></span>Eagle / lebih baik</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#bbf7d0"></span>Birdie</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#e0f2fe"></span>Par</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#fed7aa"></span>Bogey</div>
+        <div class="legend-item"><span class="legend-dot" style="background:#fecaca"></span>Double Bogey+</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:4px">
+        <div>
+          <div style="font-size:19px;font-weight:700;color:#111">🏆 ${tname}</div>
+          <div style="font-size:13px;color:#6b7280;margin-top:4px">Format: ${fmtLabel} &nbsp;|&nbsp; ${results.length} Pemain</div>
+        </div>
+        <button class="btn sm" onclick="calculateAndShow()"><i class="ti ti-refresh"></i> Perbarui</button>
+      </div>
+      ${podiumHtml}
+      ${countbackInfo}
+    </div>
+    <div class="card">
+      <div class="section-title">Papan Skor Lengkap</div>
+      <div style="overflow-x:auto">
+        <table class="result-table">
+          <thead><tr>
+            <th>Posisi</th><th>Pemain</th>
+            <th style="text-align:center">Gross</th>
+            <th style="text-align:center">Nett</th>
+            <th style="text-align:center">vs Par</th>
+            <th style="text-align:center">Poin</th>
+            <th style="text-align:center">Hole</th>
+          </tr></thead>
+          <tbody>${tableRows}</tbody>
+        </table>
+      </div>
+    </div>
+    ${detailCards}
+  `;
+}
+
+function showTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  const idx=['setup','pars','scores','results'].indexOf(name);
+  document.querySelectorAll('.tab')[idx].classList.add('active');
+}
+
+initParGrids();
+renderPlayersList();
+renderScoreSheets();
+</script>
+</body>
+</html>
