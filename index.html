@@ -10,7 +10,6 @@
       maximum-scale=1,
       user-scalable=no">
 <title>Sistem 36 Golf</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.9.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:system-ui,sans-serif;background:#f3f4f6;color:#1a1a1a;min-height:100vh;padding:16px}
@@ -215,10 +214,10 @@ input[type=number] {
 <div class="app">
 
   <div class="tabs">
-    <button class="tab active" onclick="showTab('setup')"><i class="ti ti-users"></i> Pemain</button>
-    <button class="tab" onclick="showTab('pars')"><i class="ti ti-flag"></i> Par & Stroke</button>
-    <button class="tab" onclick="showTab('scores')"><i class="ti ti-clipboard-list"></i> Skor</button>
-    <button class="tab" onclick="showTab('results')"><i class="ti ti-trophy"></i> Hasil</button>
+    <button class="tab active" onclick="showTab('setup')">👥 Pemain</button>
+    <button class="tab" onclick="showTab('pars')">⛳ Par</button>
+    <button class="tab" onclick="showTab('scores')">📝 Skor</button>
+    <button class="tab" onclick="showTab('results')">🏆 Hasil</button>
   </div>
 
   <!-- PANEL PEMAIN -->
@@ -246,25 +245,24 @@ input[type=number] {
           <label>Nama Pemain</label>
           <input type="text" id="new-player-name" placeholder="Nama lengkap" onkeydown="if(event.key==='Enter')addPlayer()">
         </div>
-        <button class="btn primary" onclick="addPlayer()" style="flex-shrink:0"><i class="ti ti-plus"></i> Tambah</button>
+        <button class="btn primary" onclick="addPlayer()" style="flex-shrink:0">➕ Tambah</button>
       </div>
     </div>
     <div id="players-list"></div>
       <div class="action-buttons">
         <button class="btn danger" onclick="resetStorage()">
-          <i class="ti ti-trash"></i> Reset Semua
+          🗑 Reset Semua
         </button>
 
         <button class="btn primary" onclick="showTab('pars')">
-          Lanjut ke Par Lapangan
-          <i class="ti ti-arrow-right"></i>
+          Lanjut ke Par Lapangan →
         </button>
       </div>
   </div>
 
   <!-- PANEL PAR -->
   <div id="panel-pars" class="panel">
-    <div class="alert info"><i class="ti ti-info-circle"></i> <span>Atur Par dan Stroke Index (SI) setiap hole. SI menentukan urutan alokasi pukulan bonus handicap.</span></div>
+    <div class="alert info"><span>Atur Par dan Stroke Index (SI) setiap hole. SI menentukan urutan alokasi pukulan bonus handicap.</span></div>
     <div class="card">
       <div class="section-title">Front Nine — Hole 1 sampai 9</div>
       <div id="par-front-grid"></div>
@@ -274,8 +272,8 @@ input[type=number] {
       <div id="par-back-grid"></div>
     </div>
     <div style="display:flex;justify-content:space-between;margin-top:4px">
-      <button class="btn" onclick="showTab('setup')"><i class="ti ti-arrow-left"></i> Kembali</button>
-      <button class="btn primary" onclick="showTab('scores')">Lanjut ke Input Skor <i class="ti ti-arrow-right"></i></button>
+      <button class="btn" onclick="showTab('setup')">← Kembali</button>
+      <button class="btn primary" onclick="showTab('scores')">Lanjut ke Input Skor →</button>
     </div>
   </div>
 
@@ -283,14 +281,14 @@ input[type=number] {
   <div id="panel-scores" class="panel">
     <div id="score-sheets"></div>
     <div style="display:flex;justify-content:space-between;margin-top:4px">
-      <button class="btn" onclick="showTab('pars')"><i class="ti ti-arrow-left"></i> Kembali</button>
-      <button class="btn primary" onclick="calculateAndShow()"><i class="ti ti-chart-bar"></i> Hitung & Lihat Hasil</button>
+      <button class="btn" onclick="showTab('pars')">← Kembali</button>
+      <button class="btn primary" onclick="calculateAndShow()">📊 Hitung & Lihat Hasil</button>
     </div>
   </div>
 
   <!-- PANEL HASIL -->
   <div id="panel-results" class="panel">
-    <div id="results-content"><div class="empty"><i class="ti ti-trophy" style="font-size:40px;display:block;margin-bottom:10px"></i>Belum ada hasil. Isi skor terlebih dahulu.</div></div>
+    <div id="results-content"><div class="empty">🏆 Belum ada hasil. Isi skor terlebih dahulu.</div></div>
   </div>
 </div>
 
@@ -329,7 +327,7 @@ function initParGrids(){
 
 function renderPlayersList(){
   const el=document.getElementById('players-list');
-  if(!players.length){el.innerHTML='<div class="empty"><i class="ti ti-users" style="font-size:36px;display:block;margin-bottom:10px"></i>Belum ada pemain. Tambahkan pemain di atas.</div>';return;}
+  if(!players.length){el.innerHTML='<div class="empty">👥 Belum ada pemain. Tambahkan pemain di atas.</div>';return;}
   el.innerHTML=players.map((p,i)=>`
     <div class="player-chip">
       <div class="avatar">${p.name.substring(0,2).toUpperCase()}</div>
@@ -337,7 +335,7 @@ function renderPlayersList(){
         <div class="player-name">${p.name}</div>
       </div>
       <button class="btn sm danger delete-btn" onclick="removePlayer(${i})">
-        <i class="ti ti-trash"></i>
+        🗑
       </button>
     </div>`).join('');
 }
@@ -749,7 +747,7 @@ function renderResults(results){
           <div style="font-size:19px;font-weight:700;color:#111">🏆 ${tname}</div>
           <div style="font-size:13px;color:#6b7280;margin-top:4px">Format: ${fmtLabel} &nbsp;|&nbsp; ${results.length} Pemain</div>
         </div>
-        <button class="btn sm" onclick="calculateAndShow()"><i class="ti ti-refresh"></i> Perbarui</button>
+        <button class="btn sm" onclick="calculateAndShow()">🔄 Perbarui</button>
       </div>
       ${podiumHtml}
       ${countbackInfo}
