@@ -3,6 +3,10 @@
 <head>
 <link rel="apple-touch-icon" href="logo.png">
 <link rel="icon" type="image/png" href="logo.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="System 36">
+<link rel="manifest" href="manifest.json">
 <meta charset="UTF-8">
 <meta name="viewport"
       content="width=device-width,
@@ -262,7 +266,7 @@ input[type=number] {
 
   <!-- PANEL PAR -->
   <div id="panel-pars" class="panel">
-    <div class="alert info"><span>Atur Par dan Stroke Index (SI) setiap hole. SI menentukan urutan alokasi pukulan bonus handicap.</span></div>
+    <div class="alert info"><span>Atur nilai Par untuk setiap hole</span></div>
     <div class="card">
       <div class="section-title">Front Nine — Hole 1 sampai 9</div>
       <div id="par-front-grid"></div>
@@ -596,7 +600,10 @@ function getCountbackReason(winner, loser){
 function renderResults(results){
   const format=document.getElementById('game-format').value;
   const tname=document.getElementById('tournament-name').value||'Golf Tournament';
-  const fmtLabel=format==='stableford'?'Stableford (Poin)':format==='nett'?'Nett Score':'Gross Score';
+  const fmtLabel =
+  format === 'nett'
+    ? 'Nett Score'
+    : 'Gross Score';
   const el=document.getElementById('results-content');
   const top=results.slice(0,Math.min(3,results.length));
   let countbackInfo = '';
@@ -783,6 +790,14 @@ function showTab(name){
 initParGrids();
 renderPlayersList();
 renderScoreSheets();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js')
+      .then(() => console.log('Service Worker registered'))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
 </script>
 </body>
 </html>
