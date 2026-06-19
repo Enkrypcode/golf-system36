@@ -48,6 +48,10 @@ body{font-family:system-ui,sans-serif;background:#f3f4f6;color:#1a1a1a;min-heigh
   color:#666;
 }
 
+#course-select{
+  width:100%;
+  font-size:16px;
+}
 .header h1{font-size:22px;font-weight:600;color:#111}
 .header p{font-size:13px;color:#6b7280;margin-top:2px}
 .tabs{display:flex;gap:0;background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:4px;margin-bottom:16px}
@@ -61,7 +65,11 @@ body{font-family:system-ui,sans-serif;background:#f3f4f6;color:#1a1a1a;min-heigh
 .field-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap}
 .field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:90px}
 .field label{font-size:12px;color:#6b7280;font-weight:500}
-.field input,.field select{font-size:14px;padding:8px 10px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111;width:100%;outline:none}
+.field input,
+.field select{
+  font-size:14px;
+  padding:8px 10px;
+}
 .field input:focus,.field select:focus{border-color:#0F6E56;box-shadow:0 0 0 3px #0F6E5620}
 .btn{padding:9px 18px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#374151;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;transition:all .15s;font-weight:500}
 .btn:hover{background:#f9fafb}
@@ -89,6 +97,7 @@ body{font-family:system-ui,sans-serif;background:#f3f4f6;color:#1a1a1a;min-heigh
 .par-cell{font-size:12px;font-weight:500;color:#6b7280;text-align:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:5px 2px}
 .par-cell.left{text-align:left;padding-left:8px}
 .par-cell input{border:none;background:transparent;text-align:center;font-size:12px;width:100%;outline:none;color:#374151;font-weight:600}
+.par-cell input:disabled{color:#374151;cursor:not-allowed;background:transparent;opacity:1}
 .summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
 .metric{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px}
 .metric-label{font-size:12px;color:#9ca3af;font-weight:500;margin-bottom:4px}
@@ -266,7 +275,17 @@ input[type=number] {
 
   <!-- PANEL PAR -->
   <div id="panel-pars" class="panel">
-    <div class="alert info"><span>Atur nilai Par untuk setiap hole</span></div>
+    <div class="card">
+      <div class="field">
+        <label>Pilih Lapangan</label>
+        <select id="course-select" onchange="loadCourse()">
+        </select>
+      </div>
+    </div>
+
+  <div id="par-alert" class="alert info">
+    <span>Atur nilai Par untuk setiap hole</span>
+  </div>
     <div class="card">
       <div class="section-title">Front Nine — Hole 1 sampai 9</div>
       <div id="par-front-grid"></div>
@@ -296,11 +315,61 @@ input[type=number] {
   </div>
 </div>
 
+<script src="courses.js"></script>
 <script>
 let players = JSON.parse(localStorage.getItem('golf_players')) || [];
-let pars = JSON.parse(localStorage.getItem('golf_pars')) || [4,3,5,4,4,3,5,4,4,4,3,5,4,4,3,5,4,4];
+let pars =
+  JSON.parse(localStorage.getItem('golf_pars'))
+  || Array(18).fill('');
 let strokeIndex = JSON.parse(localStorage.getItem('golf_si')) || [1,3,5,7,9,11,13,15,17,2,4,6,8,10,12,14,16,18];
 let scores = JSON.parse(localStorage.getItem('golf_scores')) || {};
+
+function populateCourses(){
+
+  const select = document.getElementById('course-select');
+
+  select.innerHTML = Object.keys(COURSES)
+    .map(course =>
+      `<option value="${course}">${course}</option>`
+    )
+    .join('');
+
+  // Re-render par grids setelah dropdown terisi agar readOnly state benar
+  initParGrids();
+
+}
+
+function loadCourse(){
+
+  const selected =
+    document.getElementById('course-select').value;
+
+  if(selected === 'Custom'){
+
+    pars = [...COURSES["Custom"].par];
+
+    saveData();
+
+    initParGrids();
+
+    renderScoreSheets();
+
+    return;
+  }
+
+  const course = COURSES[selected];
+
+  if(!course) return;
+
+  pars = [...course.par];
+
+  saveData();
+
+  initParGrids();
+
+  renderScoreSheets();
+
+}
 
 function saveData(){
   localStorage.setItem('golf_players', JSON.stringify(players));
@@ -317,16 +386,57 @@ function resetStorage(){
 }
 
 function initParGrids(){
+
+  console.log(
+    'Selected:',
+    document.getElementById('course-select')?.value
+  );
+
+  const selectedCourse =
+    document.getElementById('course-select')?.value || 'Custom';
+
+  const readOnly =
+    selectedCourse !== 'Custom';
+
+  // Update alert message
+  const alertEl = document.getElementById('par-alert');
+  if(alertEl){
+    alertEl.innerHTML = readOnly
+      ? `<span>🔒 Lapangan <strong>${selectedCourse}</strong> — nilai Par sudah ditetapkan dan tidak dapat diubah. Pilih <strong>Custom</strong> untuk mengatur Par sendiri.</span>`
+      : `<span>✏️ Lapangan <strong>Custom</strong> — Atur nilai Par untuk setiap hole sesuai kebutuhan.</span>`;
+  }
+
   ['front','back'].forEach((side,si)=>{
+
     const offset=si*9;
     const el=document.getElementById('par-'+side+'-grid');
+
     let html='<div class="par-row"><div class="par-cell left">Hole</div>';
-    for(let i=1;i<=9;i++) html+=`<div class="par-cell">${i+offset}</div>`;
+
+    for(let i=1;i<=9;i++)
+      html+=`<div class="par-cell">${i+offset}</div>`;
+
     html+='</div><div class="par-row"><div class="par-cell left">Par</div>';
-    for(let i=0;i<9;i++) html+=`<div class="par-cell"><input type="number" min="3" max="5" value="${pars[offset+i]}" onchange="pars[${offset+i}]=+this.value;saveData()"></div>`;
+
+    for(let i=0;i<9;i++)
+      html+=`
+        <div class="par-cell">
+          <input
+            type="number"
+            min="3"
+            max="5"
+            value="${pars[offset+i]}"
+            ${readOnly ? 'disabled' : ''}
+            onchange="pars[${offset+i}]=+this.value;saveData()">
+        </div>
+      `;
+
     html+='</div>';
+
     el.innerHTML=html;
+
   });
+
 }
 
 function renderPlayersList(){
@@ -787,7 +897,7 @@ function showTab(name){
   document.querySelectorAll('.tab')[idx].classList.add('active');
 }
 
-initParGrids();
+populateCourses();
 renderPlayersList();
 renderScoreSheets();
 
