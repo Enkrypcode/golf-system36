@@ -1,10 +1,11 @@
-const CACHE_NAME = 'system36-v1';
+const CACHE_NAME = 'system36-v2';
 
 const urlsToCache = [
   '/',
   '/index.html',
   '/logo.png',
-  '/manifest.json'
+  '/manifest.json',
+  '/courses.js'
 ];
 
 self.addEventListener('install', event => {
