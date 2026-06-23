@@ -560,48 +560,74 @@ function calculateResults(){
 
     let totalGross=0;
     let totalAdjustment=0;
+    let totalPoints=0;
     let grossCount=0;
 
     const holeData=sc.map((s,i)=>{
 
       const gross=s===''?null:parseInt(s);
 
-      let adjustment=null;
+      let adjustment = null;
+      let points = null;
 
       if(gross!==null){
 
         const diff = gross - pars[i];
 
+        adjustment = 0;
+        points = 0;
+
         if(diff <= -2){
-          adjustment = -2;          // Eagle atau lebih baik
-        }else if(diff === -1){
-          adjustment = -1;          // Birdie
-        }else if(diff <= 2){
-          adjustment = 0;           // Par, Bogey, Double
-        }else{
-          adjustment = diff - 2;    // Triple=1, Quad=2, dst
+          adjustment = -2;
+          points = 4;
+        }
+        else if(diff === -1){
+          adjustment = -1;
+          points = 3;
+        }
+        else if(diff === 0){
+          adjustment = 0;
+          points = 2;
+        }
+        else if(diff === 1){
+          adjustment = 0;
+          points = 1;
+        }
+        else if(diff === 2){
+          adjustment = 0;
+          points = 0;
+        }
+        else{
+          adjustment = diff - 2;
+          points = 0;
         }
 
         totalGross += gross;
         totalAdjustment += adjustment;
+        totalPoints += points;
         grossCount++;
       }
 
       return {
         gross,
         par: pars[i],
-        adjustment
+        adjustment,
+        points
       };
     });
 
     const totalPar = pars.reduce((a,b)=>a+b,0);
-
-    // NET SYSTEM 36
-    const totalNett = totalPar + totalAdjustment;
-    const back9 = getCountbackScore({holeData},9);
-    const last6 = getCountbackScore({holeData},12);
-    const last3 = getCountbackScore({holeData},15);
-    const hole18 = holeData[17]?.gross || 999;
+    const hcp = 36 - totalPoints;
+    const totalNett = totalGross - hcp;
+    const back9 =
+      getCountbackScore({holeData},9) - (hcp/2);
+    const last6 =
+      getCountbackScore({holeData},12) - (hcp/3);
+    const last3 =
+      getCountbackScore({holeData},15) - (hcp/6);
+    const hole18 =
+      ((holeData[17]?.gross ?? 0))
+      - (hcp/18);
 
 
     return {
@@ -610,6 +636,8 @@ function calculateResults(){
       totalGross,
       totalNett,
       totalAdjustment,
+      totalPoints,
+      hcp,
       grossCount,
       format,
       totalPar,
@@ -702,7 +730,7 @@ function getCountbackReason(winner, loser){
     return `Countback Last 3 (${winner.last3} vs ${loser.last3})`;
 
   if(winner.hole18 !== loser.hole18)
-    return `Countback Hole 18 (${winner.hole18} vs ${loser.hole18})`;
+    return `Countback Hole 18 (${winner.hole18.toFixed(2)} vs ${loser.hole18.toFixed(2)})`;
 
   return null;
 }
@@ -744,7 +772,7 @@ function renderResults(results){
       top.length===2?[{r:top[1],cls:'podium-2',medal:'🥈',ht:'85px'},{r:top[0],cls:'podium-1',medal:'🥇',ht:'120px'}]:
       [{r:top[0],cls:'podium-1',medal:'🥇',ht:'120px'}];
       function getScore(r){
-        return 'Net ' + r.totalNett;
+        return `Gross ${r.totalGross} | Nett ${r.totalNett}`;
       }
     podiumHtml=`<div class="podium">${arrangement.map(a=>`
       <div class="podium-place ${a.cls}">
@@ -756,8 +784,7 @@ function renderResults(results){
   }
 
   const tableRows=results.map((r,i)=>{
-    const ptsHtml =
-    `${r.totalAdjustment > 0 ? '+' : ''}${r.totalAdjustment}`;
+    const ptsHtml = r.totalPoints;
     const badges=['<span class="badge gold">🥇 Juara 1</span>','<span class="badge silver">🥈 Juara 2</span>','<span class="badge bronze">🥉 Juara 3</span>'];
     const rankBadge=i<3?badges[i]:`<span class="badge other">${i+1}</span>`;
     const nettVsPar=r.totalNett-r.totalPar;
@@ -777,11 +804,25 @@ function renderResults(results){
             }
           </div>
         </div></div></td>
-      <td style="text-align:center;font-weight:600">${r.grossCount>0?r.totalGross:'–'}</td>
-      <td style="text-align:center;font-weight:600">${r.grossCount>0?r.totalNett:'–'}</td>
-      <td style="text-align:center">${r.grossCount>0?nettStr:'–'}</td>
-      <td style="text-align:center">${ptsHtml}</td>
-      <td style="text-align:center;color:#6b7280">${r.grossCount}/18</td>
+          <td style="text-align:center;font-weight:600">
+            ${r.grossCount>0?r.totalGross:'–'}
+          </td>
+
+          <td style="text-align:center;font-weight:600">
+            ${r.grossCount>0?r.totalNett:'–'}
+          </td>
+
+          <td style="text-align:center">
+            ${r.totalPoints}
+          </td>
+
+          <td style="text-align:center">
+            ${r.hcp}
+          </td>
+
+          <td style="text-align:center;color:#6b7280">
+            ${r.grossCount}/18
+          </td>
     </tr>`;
   }).join('');
 
@@ -820,19 +861,42 @@ function renderResults(results){
           </div>
         </div>
       </div>
-      <div class="summary-grid">
-        <div class="metric"><div class="metric-label">Total Gross</div><div class="metric-value">${r.grossCount>0?r.totalGross:'–'}</div><div class="metric-sub">Par ${r.totalPar}</div></div>
-        <div class="metric"><div class="metric-label">Total Nett</div><div class="metric-value">${r.grossCount>0?r.totalNett:'–'}</div><div class="metric-sub">System 36 Adjustment</div></div>
-        <div class="metric">
-          <div class="metric-label">Adjustment</div>
-          <div class="metric-value" style="color:#0F6E56">
-            ${r.totalAdjustment > 0 ? '+' : ''}${r.totalAdjustment}
-          </div>
-          <div class="metric-sub">System 36</div>
-        </div>
-        <div class="metric"><div class="metric-label">Hole Selesai</div><div class="metric-value">${r.grossCount}</div><div class="metric-sub">dari 18 hole</div></div>
-      </div>
-      <div class="section-title">Scorecard</div>
+      
+<div class="summary-grid">
+
+  <div class="metric">
+    <div class="metric-label">Gross</div>
+    <div class="metric-value">${r.totalGross}</div>
+    <div class="metric-sub">Total Stroke</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-label">Nett</div>
+    <div class="metric-value">${r.totalNett}</div>
+    <div class="metric-sub">Gross - HCP</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-label">Points</div>
+    <div class="metric-value">${r.totalPoints}</div>
+    <div class="metric-sub">System 36 Points</div>
+  </div>
+
+  <div class="metric">
+    <div class="metric-label">HCP</div>
+    <div class="metric-value">${r.hcp}</div>
+    <div class="metric-sub">36 - Points</div>
+  </div>
+
+</div>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:16px;color:#6b7280;font-size:13px;">
+  <div>Adjustment: <strong>${r.totalAdjustment}</strong></div>
+  <div>Hole Selesai: <strong>${r.grossCount}/18</strong></div>
+</div>
+
+<div class="section-title">Scorecard</div>
+
       <div style="overflow-x:auto"><div style="min-width:520px">
         <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Hole</div>${holeHeader(1,9)}</div>
         <div class="par-row" style="margin-bottom:2px"><div class="par-cell left" style="font-size:11px">Par</div>${parHeader(frontHoles)}</div>
@@ -864,7 +928,15 @@ function renderResults(results){
           <div style="font-size:19px;font-weight:700;color:#111">🏆 ${tname}</div>
           <div style="font-size:13px;color:#6b7280;margin-top:4px">Format: ${fmtLabel} &nbsp;|&nbsp; ${results.length} Pemain</div>
         </div>
-        <button class="btn sm" onclick="calculateAndShow()">🔄 Perbarui</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn sm" onclick="calculateAndShow()">
+          Perbarui
+        </button>
+
+        <button class="btn sm primary" onclick="exportCSV()">
+          Export Hasil
+        </button>
+      </div>
       </div>
       ${podiumHtml}
       ${countbackInfo}
@@ -877,8 +949,8 @@ function renderResults(results){
             <th>Posisi</th><th>Pemain</th>
             <th style="text-align:center">Gross</th>
             <th style="text-align:center">Nett</th>
-            <th style="text-align:center">vs Par</th>
-            <th style="text-align:center">Poin</th>
+            <th style="text-align:center">Points</th>
+            <th style="text-align:center">HCP</th>
             <th style="text-align:center">Hole</th>
           </tr></thead>
           <tbody>${tableRows}</tbody>
@@ -887,6 +959,110 @@ function renderResults(results){
     </div>
     ${detailCards}
   `;
+}
+
+function exportCSV(){
+
+  const results = calculateResults();
+
+  const rows = [];
+
+  rows.push([
+    'Pos',
+    'Nama',
+
+    'H1','H2','H3','H4','H5','H6','H7','H8','H9',
+    'H10','H11','H12','H13','H14','H15','H16','H17','H18',
+
+    'Front',
+    'Back',
+
+    'Gross',
+    'Nett',
+
+    'Points',
+    'HCP',
+    'Adjustment',
+
+    'CB9',
+    'CB6',
+    'CB3',
+    'CB1'
+  ]);
+
+  results.forEach((r,index)=>{
+
+    const holeScores =
+      r.holeData.map(h =>
+        h.gross === null ? '' : h.gross
+      );
+
+    const front =
+      holeScores
+        .slice(0,9)
+        .reduce((a,b)=>a+(Number(b)||0),0);
+
+    const back =
+      holeScores
+        .slice(9,18)
+        .reduce((a,b)=>a+(Number(b)||0),0);
+
+  rows.push([
+      index + 1,
+      r.player.name,
+
+      ...holeScores,
+
+      front,
+      back,
+
+      r.totalGross,
+      r.totalNett,
+
+      r.totalPoints,
+      r.hcp,
+      r.totalAdjustment,
+
+      Number(r.back9 || 0)
+      .toFixed(2)
+      .replace('.', ','),
+      Number(r.last6 || 0)
+      .toFixed(2)
+      .replace('.', ','),
+      Number(r.last3 || 0)
+      .toFixed(2)
+      .replace('.', ','),
+      Number(r.hole18 || 0)
+      .toFixed(2)
+      .replace('.', ',')
+    ]);
+
+  });
+
+  const csvContent =
+    rows.map(r => r.join(';')).join('\n');
+
+  const blob =
+    new Blob(
+      [csvContent],
+      {type:'text/csv;charset=utf-8;'}
+    );
+
+  const link =
+    document.createElement('a');
+
+  link.href =
+    URL.createObjectURL(blob);
+
+  link.download =
+    'System36_Result.csv';
+
+  document.body.appendChild(link);
+
+  link.click();
+
+  document.body.removeChild(link);
+
 }
 
 function showTab(name){
